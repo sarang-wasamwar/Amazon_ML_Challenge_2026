@@ -31,6 +31,22 @@ Amazon_ML_Challenge_2026/
 ├── .gitignore                        # Git exclusion rules for large datasets/outputs
 └── README.md
 ```
+---
+
+## 📊 Dataset
+
+The complete dataset is stored separately on Google Drive because the raw dataset files are large and are intentionally excluded from this GitHub repository.
+
+**Dataset:** [Google Drive — Amazon ML Challenge 2026 Dataset](https://drive.google.com/file/d/1mzAnms2WuvKw5D16I1XdfpNtVgBg47xW/view?usp=sharing)
+
+The dataset should be downloaded and placed in the following directory structure:
+
+```text
+student_resource/
+└── dataset/
+    ├── train/
+    └── test/
+```
 
 ---
 

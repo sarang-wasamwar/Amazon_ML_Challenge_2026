@@ -11,7 +11,7 @@ def generate_candidates(
     df_s2: pd.DataFrame,
     df_s3: pd.DataFrame,
     top_n: int = 15,
-    sub_batch_size: int = 500,
+    sub_batch_size: int = 50,
     min_similarity: float = 0.25,
     output_path: str = None,
 ) -> tuple:
@@ -134,6 +134,19 @@ def generate_candidates(
 
         del X_s1_ctry, X_s23_ctry, vectorizer, all_texts, df_s1_sub, df_s23_sub
         gc.collect()
+
+        # Simple Checkpointing: write the current accumulated candidate_dict to output_path
+        if output_path:
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            tsv_rows = []
+            # We can write the ones processed so far
+            for s1_id in s1_ids_all:
+                if s1_id in candidate_dict and candidate_dict[s1_id]:
+                    c_str = ",".join(candidate_dict[s1_id])
+                    tsv_rows.append({"source1_entity_id": s1_id, "candidate_entity_ids": c_str})
+            if tsv_rows:
+                pd.DataFrame(tsv_rows).to_csv(output_path + ".checkpoint", sep="\t", index=False, encoding="utf-8")
+                print(f"[Blocking] Checkpointed pairs to {output_path}.checkpoint")
 
     pairs_df = pd.DataFrame(pair_rows)
     print(f"[Blocking] Completed candidate pair generation. Total pairs: {len(pairs_df):,}")

@@ -1,16 +1,25 @@
-Set-Content -Path .gitignore -Value @"
-# Ignore raw datasets and generated prediction outputs
+# Raw datasets and generated prediction outputs
 student_resource/dataset/train/*.tsv
 student_resource/dataset/test/*.tsv
 student_resource/output/*.tsv
 *.tsv
+*.tsv.checkpoint
 *.zip
 *.tar.gz
 
-# Ignore Python cache & OS files
+# Python cache & OS files
 __pycache__/
 *.pyc
 .agent/
 .DS_Store
 __MACOSX/
-"@
+
+# Virtual environment
+venv/
+
+# Submission
+Team_Decoder_submission/
+Team_Decoder_submission.zip
+
+# Project status
+project_status.md

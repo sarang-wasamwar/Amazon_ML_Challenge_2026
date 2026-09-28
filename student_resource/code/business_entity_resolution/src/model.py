@@ -134,7 +134,24 @@ def train_and_tune_threshold(
         model.fit(X_train, y_train)
         return model, 0.70, 0.0
 
-    print("[Model] Attempting LightGBM GPU Acceleration (device='gpu', platform=0, device=0)...")
+    # print("[Model] Attempting LightGBM GPU Acceleration (device='gpu', platform=0, device=0)...")
+    # try:
+    #     model = lgb.LGBMClassifier(
+    #         n_estimators=400,
+    #         learning_rate=0.05,
+    #         num_leaves=31,
+    #         max_depth=6,
+    #         subsample=0.8,
+    #         colsample_bytree=0.8,
+    #         is_unbalance=True,
+    #         random_state=42,
+    #         n_jobs=-1,
+    #         verbose=-1,
+    #         device="gpu",
+    #         gpu_platform_id=0,
+    #         gpu_device_id=0,
+    #     )
+    print("[Model] Attempting LightGBM CUDA GPU Acceleration...")
     try:
         model = lgb.LGBMClassifier(
             n_estimators=400,
@@ -145,11 +162,8 @@ def train_and_tune_threshold(
             colsample_bytree=0.8,
             is_unbalance=True,
             random_state=42,
-            n_jobs=-1,
+            device_type="cuda",
             verbose=-1,
-            device="gpu",
-            gpu_platform_id=0,
-            gpu_device_id=0,
         )
         model.fit(
             X_train,
@@ -158,8 +172,10 @@ def train_and_tune_threshold(
             callbacks=[lgb.early_stopping(stopping_rounds=30, verbose=False)],
         )
         print("[Model GPU] Successfully trained LightGBM model using GPU acceleration!")
+    # except Exception as exc:
+    #     print(f"[Model Warning] GPU acceleration unavailable ({exc}). Falling back to CPU mode...")
     except Exception as exc:
-        print(f"[Model Warning] GPU acceleration unavailable ({exc}). Falling back to CPU mode...")
+        print(f"[Model CUDA ERROR] {exc}")
         model = lgb.LGBMClassifier(
             n_estimators=400,
             learning_rate=0.05,
@@ -170,6 +186,7 @@ def train_and_tune_threshold(
             is_unbalance=True,
             random_state=42,
             n_jobs=-1,
+            device_type="cpu",
             verbose=-1,
         )
         model.fit(
@@ -178,6 +195,7 @@ def train_and_tune_threshold(
             eval_set=[(X_val, y_val)],
             callbacks=[lgb.early_stopping(stopping_rounds=30, verbose=False)],
         )
+        raise
 
     # Decision threshold tuning on validation set
     val_probs = model.predict_proba(X_val)[:, 1]

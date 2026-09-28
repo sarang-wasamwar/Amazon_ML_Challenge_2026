@@ -127,10 +127,7 @@ def main():
 
         ground_truth_dict = load_ground_truth(train_gt_path, s1_ids_filter=sampled_s1_ids)
 
-        test_s1_raw = load_tsv(test_s1_path, nrows=n_sample)
-        test_s2_raw = load_tsv(test_s2_path, nrows=n_sample * 3)
-        test_s3_raw = load_tsv(test_s3_path, nrows=n_sample * 3)
-
+        # Removed test_s1_raw, test_s2_raw, test_s3_raw loading to save memory until Step 5
         gc.collect()
     else:
         train_s1_raw = load_tsv(train_s1_path)
@@ -138,16 +135,12 @@ def main():
         train_s3_raw = load_tsv(train_s3_path)
         ground_truth_dict = load_ground_truth(train_gt_path)
 
-        test_s1_raw = load_tsv(test_s1_path)
-        test_s2_raw = load_tsv(test_s2_path)
-        test_s3_raw = load_tsv(test_s3_path)
+        # Removed test data loading here to save memory
 
     print(f"  Train S1 Records: {len(train_s1_raw):,}")
     print(f"  Train S2 Records: {len(train_s2_raw):,}")
     print(f"  Train S3 Records: {len(train_s3_raw):,}")
-    print(f"  Test S1 Records:  {len(test_s1_raw):,}")
-    print(f"  Test S2 Records:  {len(test_s2_raw):,}")
-    print(f"  Test S3 Records:  {len(test_s3_raw):,}")
+    # Removed Test printout here since it's loaded later
 
     # ---------------------------------------------------------
     # STEP 2: PREPROCESSING
@@ -160,12 +153,7 @@ def main():
     del train_s1_raw, train_s2_raw, train_s3_raw
     gc.collect()
 
-    test_s1 = preprocess_dataframe(test_s1_raw)
-    test_s2 = preprocess_dataframe(test_s2_raw)
-    test_s3 = preprocess_dataframe(test_s3_raw)
-
-    del test_s1_raw, test_s2_raw, test_s3_raw
-    gc.collect()
+    # Removed test preprocessing here
 
     # ---------------------------------------------------------
     # STEP 3: CANDIDATE GENERATION (BLOCKING) — TRAIN
@@ -196,6 +184,22 @@ def main():
     # ---------------------------------------------------------
     # STEP 5: CANDIDATE GENERATION & INFERENCE — TEST
     # ---------------------------------------------------------
+    print("\n[STEP 5/6] Loading Test Sets & Preprocessing...")
+    if n_sample:
+        test_s1_raw = load_tsv(test_s1_path, nrows=n_sample)
+        test_s2_raw = load_tsv(test_s2_path, nrows=n_sample * 3)
+        test_s3_raw = load_tsv(test_s3_path, nrows=n_sample * 3)
+    else:
+        test_s1_raw = load_tsv(test_s1_path)
+        test_s2_raw = load_tsv(test_s2_path)
+        test_s3_raw = load_tsv(test_s3_path)
+
+    test_s1 = preprocess_dataframe(test_s1_raw)
+    test_s2 = preprocess_dataframe(test_s2_raw)
+    test_s3 = preprocess_dataframe(test_s3_raw)
+    del test_s1_raw, test_s2_raw, test_s3_raw
+    gc.collect()
+
     print("\n[STEP 5/6] Running Candidate Generation & Model Inference on Test Set...")
     test_pairs_df, _ = generate_candidates(
         test_s1, test_s2, test_s3, top_n=args.top_n, output_path=candidate_output_path

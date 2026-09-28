@@ -155,6 +155,11 @@ def preprocess_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df_out["country"] = df_out.get("country", pd.Series([""] * len(df_out))).astype(str).str.upper().str.strip()
 
     df_out["combined_text"] = (df_out["clean_name"] + " " + df_out["clean_address"]).str.strip()
+    
+    # Drop raw columns to save memory
+    cols_to_drop = ["business_name", "business_address", "city", "state", "zip_code", "phone_number"]
+    df_out.drop(columns=[c for c in cols_to_drop if c in df_out.columns], inplace=True)
+    
     return df_out
 
 
